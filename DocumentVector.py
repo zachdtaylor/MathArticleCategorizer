@@ -5,5 +5,12 @@ from collections import defaultdict
 import gensim
 import numpy as np
 
-model = gensim.models.Word2Vec.load('SavedModel')
-print(model.wv.most_similar(positive=['my']))
+#Load Model from file Saved Model
+def getModelVector(document):
+    try:
+        model = gensim.models.Word2Vec.load('SavedModel')
+    except:
+        print("Saved Model Information Not Found")
+        return
+
+    

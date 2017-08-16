@@ -33,13 +33,18 @@ def xml2df(xml_data):
         all_records.append(record)
     return pd.DataFrame(all_records, columns=headers)
 
-df = xml2df("MathFeedsDataAll.xml")
+def trainModel(fname):
+    try:
+        df = xml2df(fname)
+    except:
+        print("Data not found")
+        return
 
-#Training the Model------------------------------------------------------------
-text = df['Text'].as_matrix()
-sentences = [clean_text_list(doc) for doc in text if type(doc) == str]
-model = gensim.models.Word2Vec(sentences, size=300, window=5, min_count=5)
-model.save('SavedModel')
-
+    #Training the Model------------------------------------------------------------
+    text = df['Text'].as_matrix()
+    sentences = [clean_text_list(doc) for doc in text if type(doc) == str]
+    model = gensim.models.Word2Vec(sentences, size=300, window=5, min_count=5)
+    model.save('SavedModel')
+    return
 
 #End Script--------------------------------------------------------------------
