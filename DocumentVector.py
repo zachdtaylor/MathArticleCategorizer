@@ -4,56 +4,51 @@ import string
 from collections import defaultdict
 import gensim
 import numpy as np
+import xml.etree.ElementTree as ET
+from lxml import etree
+from sklearn.cluster import DBSCAN
+from sklearn.cluster import MeanShift
 
-def getModelVector(document):
-    '''Main function
-    '''
-    try:
-        model = gensim.models.Word2Vec.load('SavedModel')
-    except:
-        print("Saved Model Information Not Found")
-        return
 
-def get_clusters(doc_number, num_clusters, doc_word_vectors, text_list, model):
-    '''Gets a dictionary mapping cluster number to a set of vectors belonging
-    to that cluster.
+#Helper Functions--------------------------------------------------------------
+def xml2df(xml_data):
+    tree = ET.parse(xml_data)
+    root = tree.getroot()
+    all_records = []
+    headers = []
+    for i, child in enumerate(root):
+        record = []
+        for subchild in child:
+            record.append(subchild.text)
+            if subchild.tag not in headers:
+                headers.append(subchild.tag)
+        all_records.append(record)
+    return pd.DataFrame(all_records, columns=headers)
 
-    Parameters
-    ----------
-    doc_number : int
-        The index of the document in text_list
-    num_clusters : int
-        Number of clusters to create
-    doc_word_vectors : list, contains numpy arrays
-        Each position corresponds to a document, and conatins a 2D numpy
-        array of shape (n_words, n_features)
-    text_list : list, contains strings
-        List of documents as text, where each document is a single string. Should
-        be in 1-1 correspondence with doc_word_vectors.
-    model : Word2Vec model
-        The word2vec model that gensim returns
+def clean_word(w):
+    strip_str = "()\".?!,;"
+    new_word = "".join((c for c in w if c in string.printable))
+    return new_word.strip(strip_str).lower()
 
-    Returns
-    -------
-    vector_clusters : dict, maps ints to sets
-        Maps cluster number to a set of vectors in that cluster. The vectors
-        will be the same ones as found in doc_word_vectors[doc_number], but now
-        grouped into the given amount (num_clusters) of clusters.
+def clean_text_list(doc):
+    words = doc.split()
+    clean_words = [clean_word(word) for word in words]
+    return clean_words
 
-    '''
-
+def get_clusters(doc_number, doc_word_vectors, text_list, model):
     document = doc_word_vectors[doc_number]
     words = [word for word in clean_text_list(text_list[doc_number]) if word in model.wv]
     word_vecs = {tuple(key): value for (key, value) in zip(document, words)}
 
-    clusters = KMeans(n_clusters=num_clusters).fit(doc_word_vectors[doc_number])
+    #dbscan = DBSCAN(eps=.000000001, metric='cosine', algorithm='brute', min_samples=1)
+    ms = MeanShift()
+    clusters = ms.fit(doc_word_vectors[doc_number])
 
     vector_clusters = defaultdict(set)
     for i in range(len(clusters.labels_)):
         label = clusters.labels_[i]
         vector_clusters[label].add(tuple(doc_word_vectors[doc_number][i]))
 
-    # This is just printing the words in each cluster
     for cluster in vector_clusters.keys():
         print("Cluster {}:".format(cluster+1))
         for vector in vector_clusters[cluster]:
@@ -61,3 +56,19 @@ def get_clusters(doc_number, num_clusters, doc_word_vectors, text_list, model):
         print("\n")
 
     return vector_clusters
+
+def getVector():
+    print("Starting Script...")
+    try:
+        model = gensim.models.Word2Vec.load('SavedModel')
+    except:
+        print("Saved Model Information Not Found")
+        return
+
+    text = xml2df("MathFeedsDataAll.xml")["Text"].as_matrix()
+    docs = [np.array([model.wv[word] for word in clean_text_list(doc) if word in model.wv]) for doc in text if type(doc) == str]
+    clusters = get_clusters(3, docs, text, model)
+
+
+#Run Above Functions
+getVector()
