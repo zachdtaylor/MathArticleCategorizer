@@ -7,6 +7,7 @@ import numpy as np
 import xml.etree.ElementTree as ET
 from lxml import etree
 from sklearn.cluster import DBSCAN
+from sklearn.cluster import MeanShift
 
 
 #Helper Functions--------------------------------------------------------------
@@ -39,8 +40,9 @@ def get_clusters(doc_number, doc_word_vectors, text_list, model):
     words = [word for word in clean_text_list(text_list[doc_number]) if word in model.wv]
     word_vecs = {tuple(key): value for (key, value) in zip(document, words)}
 
-    dbscan = DBSCAN(eps=0.25, metric='cosine', algorithm='brute')
-    clusters = dbscan.fit(doc_word_vectors[doc_number])
+    #dbscan = DBSCAN(eps=.000000001, metric='cosine', algorithm='brute', min_samples=1)
+    ms = MeanShift()
+    clusters = ms.fit(doc_word_vectors[doc_number])
 
     vector_clusters = defaultdict(set)
     for i in range(len(clusters.labels_)):
