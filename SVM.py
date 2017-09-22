@@ -1,10 +1,9 @@
 #Script for running data through Support Vector Machines Algorithm
 
 #Imports-----------------------------------------------------------
-import pandas as pd
-import numpy as np
+
 from sklearn.svm import SVC
-from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import train_test_split
 import time
 
 
@@ -29,21 +28,22 @@ def runSVC(X,y):
 
     
     '''
-#split up train/test data
-X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.25, random_state=10)
+    #split up train/test data
+    X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.25, random_state=10)
+    
+    
+    #fit the model
+    train_start = time.time()
+    svm = train_svm(X_train, y_train)
+    train_end = time.time()
+    print('Training time:', train_end-train_start)
+     
+    benchmark = sum(y)/len(y) #should work if y is a vector of 0s and 1s
+    score = svm.score(X_test, y_test)
+    print('Benchmark:',  benchmark) 
+    print('Score:',score)
 
-
-#fit the model
-train_start = time.time()
-svm = train_svm(X_train, y_train)
-train_end = time.time()
-print('Training time:', train_end-train_start)
- 
-benchmark = 
-score = svm.score(X_test, y_test)
-print('Benchmark: )
-print('Score:',score)
-
+runSVC(X,y)
 
 
 
