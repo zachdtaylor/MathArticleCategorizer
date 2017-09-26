@@ -8,6 +8,7 @@ import xml.etree.ElementTree as ET
 from lxml import etree
 from sklearn.cluster import DBSCAN
 from sklearn.cluster import MeanShift
+from sklearn.cluster import KMeans
 
 
 #Helper Functions--------------------------------------------------------------
@@ -40,9 +41,10 @@ def get_clusters(doc_number, doc_word_vectors, text_list, model):
     words = [word for word in clean_text_list(text_list[doc_number]) if word in model.wv]
     word_vecs = {tuple(key): value for (key, value) in zip(document, words)}
 
-    #dbscan = DBSCAN(eps=.000000001, metric='cosine', algorithm='brute', min_samples=1)
-    ms = MeanShift()
-    clusters = ms.fit(doc_word_vectors[doc_number])
+    cl_alg = DBSCAN(eps=.75, metric='cosine', algorithm='brute', min_samples=1)
+    #cl_alg = MeanShift()
+    #cl_alg = KMeans(n_clusters=10)
+    clusters = cl_alg.fit(doc_word_vectors[doc_number])
 
     vector_clusters = defaultdict(set)
     for i in range(len(clusters.labels_)):
@@ -60,7 +62,7 @@ def get_clusters(doc_number, doc_word_vectors, text_list, model):
 def getVector():
     print("Starting Script...")
     try:
-        model = gensim.models.Word2Vec.load('SavedModel')
+        model = gensim.models.KeyedVectors.load_word2vec_format('../GoogleNews-vectors-negative300.bin', binary=True)
     except:
         print("Saved Model Information Not Found")
         return
