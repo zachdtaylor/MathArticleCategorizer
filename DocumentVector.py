@@ -11,6 +11,7 @@ from sklearn.cluster import MeanShift
 from sklearn.cluster import KMeans
 
 
+
 #Helper Functions--------------------------------------------------------------
 def xml2df(xml_data):
     tree = ET.parse(xml_data)
@@ -41,10 +42,10 @@ def get_clusters(doc_number, doc_word_vectors, text_list, model):
     words = [word for word in clean_text_list(text_list[doc_number]) if word in model.wv]
     word_vecs = {tuple(key): value for (key, value) in zip(document, words)}
 
-    cl_alg = DBSCAN(eps=.75, metric='cosine', algorithm='brute', min_samples=1)
-    #cl_alg = MeanShift()
-    #cl_alg = KMeans(n_clusters=10)
-    clusters = cl_alg.fit(doc_word_vectors[doc_number])
+    cls_alg = KMeans(n_clusters=50)
+    #cls_alg = DBSCAN(eps=.000000001, metric='cosine', algorithm='brute', min_samples=1)
+    #cls_alg = MeanShift()
+    clusters = cls_alg.fit(doc_word_vectors[doc_number])
 
     vector_clusters = defaultdict(set)
     for i in range(len(clusters.labels_)):
@@ -56,6 +57,7 @@ def get_clusters(doc_number, doc_word_vectors, text_list, model):
         for vector in vector_clusters[cluster]:
             print(word_vecs[vector])
         print("\n")
+
 
     return vector_clusters
 
