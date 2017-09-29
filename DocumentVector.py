@@ -67,11 +67,7 @@ def get_clusters(doc_number, doc_word_vectors, text_list, model):
 def getVector():
     print("Starting Script...")
     try:
-<<<<<<< HEAD
         model = gensim.models.Word2Vec.load_word2vec_format('./model/GoogleNews-vectors-negative300.bin', binary=True) 
-=======
-        model = gensim.models.KeyedVectors.load_word2vec_format('../GoogleNews-vectors-negative300.bin', binary=True)
->>>>>>> 9ebb37370f222db8e5ba6bae140136f531b53cb5
     except:
         print("Saved Model Information Not Found")
         return
