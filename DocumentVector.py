@@ -61,17 +61,25 @@ def get_clusters(doc_number, doc_word_vectors, text_list, model):
 
     return vector_clusters
 
+
+# Main Function -------------------------------------------
+
 def getVector():
     print("Starting Script...")
     try:
-        model = gensim.models.KeyedVectors.load_word2vec_format('../GoogleNews-vectors-negative300.bin', binary=True)
+        model = gensim.models.Word2Vec.load_word2vec_format('./model/GoogleNews-vectors-negative300.bin', binary=True) 
     except:
         print("Saved Model Information Not Found")
         return
 
     text = xml2df("MathFeedsDataAll.xml")["Text"].as_matrix()
+    #text = xml2df("MathFeedsDataAllBad.xml")["Text"].as_matrix()
     docs = [np.array([model.wv[word] for word in clean_text_list(doc) if word in model.wv]) for doc in text if type(doc) == str]
     clusters = get_clusters(3, docs, text, model)
+
+    #clusters = []
+    #for x in range(text.length):
+        #clusters.append(get_clusters(x,docs,text,model))
 
 
 #Run Above Functions
