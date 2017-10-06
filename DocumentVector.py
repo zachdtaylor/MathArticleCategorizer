@@ -9,6 +9,7 @@ from lxml import etree
 from sklearn.cluster import DBSCAN
 from sklearn.cluster import MeanShift
 from sklearn.cluster import KMeans
+import json
 
 
 
@@ -59,28 +60,41 @@ def get_clusters(doc_number, doc_word_vectors, text_list, model):
         print("\n")
 
 
-    return vector_clusters
+    return chooseCluster(vector_clusters)
+
+def chooseCluster(vector_cluster):
+    return vector_cluster[0]
 
 
 # Main Function -------------------------------------------
 
-def getVector():
+def getVectors():
     print("Starting Script...")
     try:
-        model = gensim.models.Word2Vec.load_word2vec_format('./model/GoogleNews-vectors-negative300.bin', binary=True) 
+        model = gensim.models.Word2Vec.load_word2vec_format('GoogleNews-vectors-negative300.bin', binary=True) 
     except:
         print("Saved Model Information Not Found")
         return
+    
+    #text = xml2df("MathFeedsDataAll.xml")["Text"].as_matrix()
+    clusters = []
+    ratings = []
+    files = ["MathFeedsDataBadExtract.xml", "MathFeedsDataAll.xml"]
+    for x in range(1):
+        text = xml2df(files[x])["Text"].as_matrix()
+        docs = [np.array([model.wv[word] for word in clean_text_list(doc) if word in model.wv]) for doc in text if type(doc) == str]
+        #clusters = get_clusters(3, docs, text, model)
 
-    text = xml2df("MathFeedsDataAll.xml")["Text"].as_matrix()
-    #text = xml2df("MathFeedsDataAllBad.xml")["Text"].as_matrix()
-    docs = [np.array([model.wv[word] for word in clean_text_list(doc) if word in model.wv]) for doc in text if type(doc) == str]
-    clusters = get_clusters(3, docs, text, model)
+        for x in range(text.length):
+            clusters.append(get_clusters(x,docs,text,model))
+            ratings.append(x)
+    
+    
+    with open("DataSetX.txt", 'w') as f:
+        f.write(json.dumps(clusters))
 
-    #clusters = []
-    #for x in range(text.length):
-        #clusters.append(get_clusters(x,docs,text,model))
-
+    with open("DataSetY.txt", 'w') as f:
+        f.write(json.dumps(ratings))
 
 #Run Above Functions
-getVector()
+getVectors()
