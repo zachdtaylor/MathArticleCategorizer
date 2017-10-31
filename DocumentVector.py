@@ -11,8 +11,6 @@ from sklearn.cluster import MeanShift
 from sklearn.cluster import KMeans
 import json
 
-
-
 #Helper Functions--------------------------------------------------------------
 def xml2df(xml_data):
     tree = ET.parse(xml_data)
@@ -43,8 +41,8 @@ def get_clusters(doc_number, doc_word_vectors, text_list, model):
     words = [word for word in clean_text_list(text_list[doc_number]) if word in model.wv]
     word_vecs = {tuple(key): value for (key, value) in zip(document, words)}
 
-    cls_alg = KMeans(n_clusters=50)
-    #cls_alg = DBSCAN(eps=.000000001, metric='cosine', algorithm='brute', min_samples=1)
+    #cls_alg = KMeans(n_clusters=50)
+    cls_alg = DBSCAN(eps=.625, metric='cosine', algorithm='brute', min_samples=1)
     #cls_alg = MeanShift()
     clusters = cls_alg.fit(doc_word_vectors[doc_number])
 
@@ -59,37 +57,37 @@ def get_clusters(doc_number, doc_word_vectors, text_list, model):
             print(word_vecs[vector])
         print("\n")
 
-
     return chooseCluster(vector_clusters)
 
-def chooseCluster(vector_cluster):
-    return vector_cluster[0]
+def chooseCluster(vector_clusters):
+    max_key = 0
+    max_size = 0
+    for k in vector_clusters:
+        if len(vector_clusters[k] > max_size):
+            max_key = k
+    return vector_clusters[max_key]
 
 
 # Main Function -------------------------------------------
 
 def getVectors():
     print("Starting Script...")
-    try:
-        model = gensim.models.Word2Vec.load_word2vec_format('GoogleNews-vectors-negative300.bin', binary=True) 
-    except:
-        print("Saved Model Information Not Found")
-        return
-    
+    model = gensim.models.KeyedVectors.load_word2vec_format('../GoogleNews-vectors-negative300.bin', binary=True)
     #text = xml2df("MathFeedsDataAll.xml")["Text"].as_matrix()
     clusters = []
     ratings = []
-    files = ["MathFeedsDataBadExtract.xml", "MathFeedsDataAll.xml"]
-    for x in range(1):
+    files = ["MathFeedsDataAll.xml"]
+    for x in range(len(files)):
         text = xml2df(files[x])["Text"].as_matrix()
         docs = [np.array([model.wv[word] for word in clean_text_list(doc) if word in model.wv]) for doc in text if type(doc) == str]
         #clusters = get_clusters(3, docs, text, model)
 
-        for x in range(text.length):
+        for x in range(len(text)):
             clusters.append(get_clusters(x,docs,text,model))
             ratings.append(x)
-    
-    
+            break
+
+
     with open("DataSetX.txt", 'w') as f:
         f.write(json.dumps(clusters))
 
