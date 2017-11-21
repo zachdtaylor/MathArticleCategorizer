@@ -19,7 +19,7 @@ def runModel(xfile,yfile,model,save_model = False):
     '''
     Parameters
     ----------
-    xfile = (string) name of file of all clusters that we have for both Math and non-Math articles
+    xfile = (string) name of file of all clusters representations that we have for both Math and non-Math articles
     y = (string) name of file indicating the rating of the article (0=bad, 1=good) 
     model = the type of model that you want to run [ie: for Naive Bayes => MultinomialNB()]
     '''
