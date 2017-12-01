@@ -19,7 +19,7 @@ def runModel(xfile,yfile,model,save_model = False):
     '''
     Parameters
     ----------
-    xfile = (string) name of file of all clusters that we have for both Math and non-Math articles
+    xfile = (string) name of file of all clusters representations that we have for both Math and non-Math articles
     y = (string) name of file indicating the rating of the article (0=bad, 1=good) 
     model = the type of model that you want to run [ie: for Naive Bayes => MultinomialNB()]
     '''
@@ -56,7 +56,7 @@ def runModel(xfile,yfile,model,save_model = False):
         print('Model saved to: ' + filename)
 
 #Main--------------------------------------------------------------
-
+if __name__ == "__main__":
 # Pick model by uncommenting the appropriate line #
 
 ## Naive Bayes
@@ -69,8 +69,9 @@ print("Begin Script")
 #sys.argv[0] is the name of the script
 xfile = sys.argv[1]
 yfile = sys.argv[2]
+save  = sys.argv[3]
 
-runModel(xfile,yfile,model)
+runModel(xfile,yfile,model,save)
 
 print("Training Complete")
 
