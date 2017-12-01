@@ -56,7 +56,7 @@ def runModel(xfile,yfile,model,save_model = False):
         print('Model saved to: ' + filename)
 
 #Main--------------------------------------------------------------
-
+if __name__ == "__main__":
 # Pick model by uncommenting the appropriate line #
 
 ## Naive Bayes
@@ -69,8 +69,9 @@ print("Begin Script")
 #sys.argv[0] is the name of the script
 xfile = sys.argv[1]
 yfile = sys.argv[2]
+save  = sys.argv[3]
 
-runModel(xfile,yfile,model)
+runModel(xfile,yfile,model,save)
 
 print("Training Complete")
 
