@@ -10,6 +10,16 @@ from sklearn.cluster import DBSCAN
 from sklearn.cluster import MeanShift
 from sklearn.cluster import KMeans
 import json
+import sys
+
+#Dictionary for TF-IDF scores--------------------------------------------------
+idf_dict = dict()
+with open("frequentwords.txt", 'r') as f:
+    for line in f:
+        word, freq = line.split()
+        idf_dict[word] = int(freq)
+
+total_words = sum(idf_dict.values())
 
 #Helper Functions--------------------------------------------------------------
 def xml2df(xml_data):
@@ -36,7 +46,7 @@ def clean_text_list(doc):
     clean_words = [clean_word(word) for word in words]
     return clean_words
 
-def get_clusters(doc_number, doc_word_vectors, text_list, model):
+def get_cluster(doc_number, doc_word_vectors, text_list, model):
     document = doc_word_vectors[doc_number]
     words = [word for word in clean_text_list(text_list[doc_number]) if word in model.wv]
     word_vecs = {tuple(key): value for (key, value) in zip(document, words)}
@@ -51,42 +61,53 @@ def get_clusters(doc_number, doc_word_vectors, text_list, model):
         label = clusters.labels_[i]
         vector_clusters[label].add(tuple(doc_word_vectors[doc_number][i]))
 
-    for cluster in vector_clusters.keys():
-        print("Cluster {}:".format(cluster+1))
-        for vector in vector_clusters[cluster]:
-            print(word_vecs[vector])
-        print("\n")
+#    for cluster in vector_clusters.keys():
+#        print("Cluster {}:".format(cluster+1))
+#        for vector in vector_clusters[cluster]:
+#            print(word_vecs[vector])
+#        print("\n")
+    print("clusters[1]: ", clusters[1])
+    return vector_clusters[chooseCluster(clusters, words)]
 
-    return chooseCluster(vector_clusters)
+def chooseCluster(clusters, doc_word_list):
+    best_cluster = 0
+    best_score = 0
+    for cluster_id in clusters.labels_:
+        score = tf_idf(clusters[cluster_id], doc_word_list)
+        if score > best_score:
+            best_cluster = cluster_id
+            best_score = score
+            
+    return best_cluster
 
-def chooseCluster(vector_clusters):
-    max_key = 0
-    max_size = 0
-    for k in vector_clusters:
-        if len(vector_clusters[k] > max_size):
-            max_key = k
-    return vector_clusters[max_key]
-
+def tf_idf(cluster, doc_word_list):
+    """Return the tf-idf score for the given cluster of words. Here, we define the tf-idf
+    for a cluster of words to be the sum of the tf-idf scores for each individual word."""
+    score = 0
+    words = np.array(doc_word_list)
+    for word in cluster:
+        tf = np.sum(words == word) / len(words)
+        idf = idf_dict[word] / total_words if word in idf_dict else 1
+        score += tf * idf
+    return score
 
 # Main Function -------------------------------------------
 
-def getVectors():
+def getVectors(file_name):
     print("Starting Script...")
     model = gensim.models.KeyedVectors.load_word2vec_format('../GoogleNews-vectors-negative300.bin', binary=True)
+    print("Google words model loaded.")
     #text = xml2df("MathFeedsDataAll.xml")["Text"].as_matrix()
     clusters = []
     ratings = []
-    files = ["MathFeedsDataAll.xml"]
-    for x in range(len(files)):
-        text = xml2df(files[x])["Text"].as_matrix()
-        docs = [np.array([model.wv[word] for word in clean_text_list(doc) if word in model.wv]) for doc in text if type(doc) == str]
-        #clusters = get_clusters(3, docs, text, model)
+    text = xml2df(file_name)["Text"].as_matrix()
+    docs = [np.array([model.wv[word] for word in clean_text_list(doc) if word in model.wv]) for doc in text if type(doc) == str]
 
-        for x in range(len(text)):
-            clusters.append(get_clusters(x,docs,text,model))
-            ratings.append(x)
-            break
-
+    for x in range(len(text)):
+        cluster = get_cluster(x,docs,text,model)
+        return cluster
+        ratings.append(x)
+        break
 
     with open("DataSetX.txt", 'w') as f:
         f.write(json.dumps(clusters))
@@ -95,4 +116,5 @@ def getVectors():
         f.write(json.dumps(ratings))
 
 #Run Above Functions
-getVectors()
+if __name__ == "__main__":
+    getVectors(sys.argv[1])
