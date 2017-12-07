@@ -125,9 +125,11 @@ def getVectors(file_name):
     docs_vectors = [np.array([model.wv[word] for word in doc]) for doc in docs_words]
 
     document_vectors = []
+    print(len(docs_words))
+    print(len(docs_vectors))
     print("Beginning loop...")
-    print("Number of documents: ", len(text))
-    for k in range(len(text)):
+    print("Number of documents: ", len(docs_words))
+    for k in range(len(docs_words)):
         print("doc # ", k)
         vecs = get_cluster(docs_vectors[k],docs_words[k],model)
         doc_vec = np.sum(np.asarray(list(vecs)), axis=0) / len(vecs)
