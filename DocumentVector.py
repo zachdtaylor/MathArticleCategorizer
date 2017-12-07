@@ -112,7 +112,6 @@ def tf_idf(cluster, words):
     return score
 
 # Main Function -------------------------------------------
-
 def getVectors(file_name):
     print("Starting Script...")
     model = gensim.models.KeyedVectors.load_word2vec_format('../GoogleNews-vectors-negative300.bin', binary=True)
@@ -145,6 +144,6 @@ def getVectors(file_name):
     # with open("DataSetY.txt", 'w') as f:
     #     f.write(json.dumps(ratings))
 
-#Run Above Functions
-# if __name__ == "__main__":
-#     getVectors(sys.argv[1])
+Run Above Functions
+if __name__ == "__main__":
+    getVectors(sys.argv[1])
