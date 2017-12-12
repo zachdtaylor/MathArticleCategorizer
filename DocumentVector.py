@@ -46,45 +46,65 @@ def clean_text_list(doc):
     clean_words = [clean_word(word) for word in words]
     return clean_words
 
-def get_cluster(doc_number, doc_word_vectors, text_list, model):
-    document = doc_word_vectors[doc_number]
-    words = [word for word in clean_text_list(text_list[doc_number]) if word in model.wv]
-    word_vecs = {tuple(key): value for (key, value) in zip(document, words)}
+def get_cluster(vectors, words, model):
+    """
+    Parameters:
+        vectors (ndarray): shape is n x 300, where n is the number of words in the document
+        words (ndarray): the entire document as a list of words (not just the distinct words)
+        model (gensim.model): the model containing the Google word vectors
+    """
+    # Dictionary that maps each word vector to the word it represents
+    word_vecs = {tuple(vector): word for (vector, word) in zip(vectors, words)}
 
     #cls_alg = KMeans(n_clusters=50)
     cls_alg = DBSCAN(eps=.625, metric='cosine', algorithm='brute', min_samples=1)
     #cls_alg = MeanShift()
-    clusters = cls_alg.fit(doc_word_vectors[doc_number])
+    cluster_model = cls_alg.fit(vectors)
 
-    vector_clusters = defaultdict(set)
-    for i in range(len(clusters.labels_)):
-        label = clusters.labels_[i]
-        vector_clusters[label].add(tuple(doc_word_vectors[doc_number][i]))
+    # cluster_vectors is a dictionary that maps each cluster label to the set of
+    # word vectors assigned to that cluster
+    # cluster_words is a dictionary that maps each cluster label to the set of
+    # words as strings assigned to that cluster
+    cluster_vectors = defaultdict(set)
+    cluster_words = defaultdict(set)
+    for i in range(len(cluster_model.labels_)):
+        label = cluster_model.labels_[i]
+        vector = tuple(cluster_model.components_[i])
+        cluster_vectors[label].add(vector)
+        cluster_words[label].add(word_vecs[vector])
+    idx = chooseCluster(cluster_words, words)
+    return cluster_vectors[idx]
 
-#    for cluster in vector_clusters.keys():
-#        print("Cluster {}:".format(cluster+1))
-#        for vector in vector_clusters[cluster]:
-#            print(word_vecs[vector])
-#        print("\n")
-    print("clusters[1]: ", clusters[1])
-    return vector_clusters[chooseCluster(clusters, words)]
-
-def chooseCluster(clusters, doc_word_list):
-    best_cluster = 0
+def chooseCluster(cluster_words, words):
+    """
+    Parameters:
+        cluster_words (dict): maps each cluster ID to a set of words assigned to that cluster
+        words (ndarray): the entire document as a list of words
+    Returns:
+        int: the ID of the most relevant cluster
+    """
+    best_cluster_ID = 0
     best_score = 0
-    for cluster_id in clusters.labels_:
-        score = tf_idf(clusters[cluster_id], doc_word_list)
+    for Id in cluster_words:
+        score = tf_idf(cluster_words[Id], words)
         if score > best_score:
-            best_cluster = cluster_id
+            best_cluster_ID = Id
             best_score = score
-            
-    return best_cluster
+    return best_cluster_ID
 
-def tf_idf(cluster, doc_word_list):
-    """Return the tf-idf score for the given cluster of words. Here, we define the tf-idf
-    for a cluster of words to be the sum of the tf-idf scores for each individual word."""
+def tf_idf(cluster, words):
+    """Return the tf-idf score for the given cluster of words.
+    Parameters:
+        cluster (set): the set of words in the cluster
+        words (ndarray): the entire document as a list of words
+    Returns:
+        float: the tf-idf score for the set of words
+
+    Notes:
+        Here, we define the tf-idf for a cluster of words to be the sum of the tf-idf scores 
+        for each individual word.
+    """
     score = 0
-    words = np.array(doc_word_list)
     for word in cluster:
         tf = np.sum(words == word) / len(words)
         idf = idf_dict[word] / total_words if word in idf_dict else 1
@@ -92,29 +112,38 @@ def tf_idf(cluster, doc_word_list):
     return score
 
 # Main Function -------------------------------------------
-
 def getVectors(file_name):
     print("Starting Script...")
     model = gensim.models.KeyedVectors.load_word2vec_format('../GoogleNews-vectors-negative300.bin', binary=True)
     print("Google words model loaded.")
-    #text = xml2df("MathFeedsDataAll.xml")["Text"].as_matrix()
-    clusters = []
-    ratings = []
     text = xml2df(file_name)["Text"].as_matrix()
-    docs = [np.array([model.wv[word] for word in clean_text_list(doc) if word in model.wv]) for doc in text if type(doc) == str]
 
-    for x in range(len(text)):
-        cluster = get_cluster(x,docs,text,model)
-        return cluster
-        ratings.append(x)
-        break
+    # docs_words contains each document as an ndarray of words
+    docs_words = [np.array([word for word in clean_text_list(doc) if word in model.wv]) for doc in text if type(doc) == str]
+    # docs_vectors contains each document as an array of word vectors
+    docs_vectors = [np.array([model.wv[word] for word in doc]) for doc in docs_words]
 
-    with open("DataSetX.txt", 'w') as f:
-        f.write(json.dumps(clusters))
+    document_vectors = []
+    print(len(docs_words))
+    print(len(docs_vectors))
+    print("Beginning loop...")
+    print("Number of documents: ", len(docs_words))
+    for k in range(len(docs_words)):
+        print("doc # ", k)
+        vecs = get_cluster(docs_vectors[k],docs_words[k],model)
+        doc_vec = np.sum(np.asarray(list(vecs)), axis=0) / len(vecs)
+        document_vectors.append(doc_vec)
+    
+    print("Saving to doc_vectors.npy...")
+    np.save("doc_vectors.npy", np.array(document_vectors))
+    print("Done.")
 
-    with open("DataSetY.txt", 'w') as f:
-        f.write(json.dumps(ratings))
+    # with open("DataSetX.txt", 'w') as f:
+    #     f.write(json.dumps(clusters))
 
-#Run Above Functions
+    # with open("DataSetY.txt", 'w') as f:
+    #     f.write(json.dumps(ratings))
+
+Run Above Functions
 if __name__ == "__main__":
     getVectors(sys.argv[1])
