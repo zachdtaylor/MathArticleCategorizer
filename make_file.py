@@ -87,6 +87,7 @@ def runScript(good_file,bad_file):
     google_model = gensim.models.KeyedVectors.load_word2vec_format('GoogleNews.bin', binary=True)
     
     #clean up article data
+    good_file = good_file.to_frame()#since good articles are series instead of dataframe...
     print('2/4: Cleaning Data')
     good_clean = cleanArticles(good_file)
     bad_clean  = cleanArticles(bad_file)
