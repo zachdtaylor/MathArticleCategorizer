@@ -7,7 +7,7 @@ from sklearn.cluster import KMeans
 from collections import defaultdict
 
 idf_dict = dict()
-with open("frequentwords.txt", 'r') as f:
+with open("./MathArticleCategorizer/frequentwords.txt", 'r') as f:
     for line in f:
         word, freq = line.split()
         idf_dict[word] = int(freq)
@@ -28,7 +28,7 @@ def doc2vec(document, model):
     words = np.array([word for word in clean_text_list(document) if word in model.wv])
     vectors = np.array([model.wv[word] for word in words])
     cluster = get_cluster(vectors, words, model)
-    return np.sum(np.asarray(list(vecs)), axis=0) / len(vecs)
+    return np.sum(np.asarray(list(cluster)), axis=0) / len(cluster)
 
 def get_cluster(vectors, words, model):
     """
