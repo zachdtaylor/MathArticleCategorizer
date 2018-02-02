@@ -39,8 +39,8 @@ def runModel(data_file,model,save_model = False):
     
     #read in the data file
     data = pd.read_csv(data_file)
-    X = data[data.columns[1]]
-    y = data[data.columns[0]]
+    X = data.drop('Class',axis = 1)
+    y = data.Class
     
     #split up train/test data
     X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.25, random_state=10)
