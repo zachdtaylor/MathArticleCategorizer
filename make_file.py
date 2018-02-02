@@ -80,18 +80,18 @@ def createFile(good_scores, bad_scores, filename = 'algorithm_file.csv', return_
 # Main Function ---------------------------------------------------------------
 def runScript(good_file,bad_file):
     
-    print("Starting 'make_file.py'... ")
+    print("\nStarting 'make_file.py'... ")
        
-    #run google model
-    print('1/4: Initializing google model')
-    google_model = gensim.models.KeyedVectors.load_word2vec_format('GoogleNews.bin', binary=True)
-    
     #clean up article data
     good_file = good_file.to_frame()#since good articles are series instead of dataframe...
-    print('2/4: Cleaning Data')
+    print('1/4: Cleaning Data')
     good_clean = cleanArticles(good_file)
     bad_clean  = cleanArticles(bad_file)
     
+    #run google model
+    print('2/4: Initializing google model')
+    google_model = gensim.models.KeyedVectors.load_word2vec_format('GoogleNews.bin', binary=True)
+       
     #get score values
     print("3/4: Getting Scores")
     good_scores = getValues(good_clean,google_model)
