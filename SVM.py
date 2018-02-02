@@ -63,22 +63,22 @@ def runModel(data_file,model,save_model = False):
 
 #Main--------------------------------------------------------------
 if __name__ == "__main__":
-# Pick model by uncommenting the appropriate line #
+    # Pick model by uncommenting the appropriate line #
 
-## Naive Bayes
-#model = MultinomialNB()
+    ## Naive Bayes
+    #model = MultinomialNB()
 
-## Support Vector Machines
-model = SVC()
+    ## Support Vector Machines
+    model = SVC()
 
-print("Begin Script")
-#sys.argv[0] is the name of the script
-data_file = sys.argv[1]
-save      = sys.argv[2]
+    print("Begin Script")
+    #sys.argv[0] is the name of the script
+    data_file = sys.argv[1]
+    save      = sys.argv[2]
 
-runModel(data_file,model,save)
+    runModel(data_file,model,save)
 
-print("Training Complete")
+    print("Training Complete")
 
 
 
