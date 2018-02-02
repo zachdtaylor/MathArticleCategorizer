@@ -16,13 +16,14 @@ def train_model(X,y,model):
         model.fit(X,y)
         return model   
 
-def runModel(data_file,model,save_model = False):
+def runModel(data_file,model,save_model = 0):
     '''
     Parameters
     ----------
     xfile = (string) name of file of all clusters representations that we have for both Math and non-Math articles
     y = (string) name of file indicating the rating of the article (0=bad, 1=good) 
     model = the type of model that you want to run [eg: for Naive Bayes => MultinomialNB()]
+    save_model = boolean indicating whether or not to save trained model
     '''
     
 #    #we aren't using  json anymore
@@ -56,6 +57,7 @@ def runModel(data_file,model,save_model = False):
     print('Score:',score)  
     print('Benchmark:',  benchmark) 
     
+    save_model = int(save_model)
     if save_model:
         filename = 'saved_model.sav'
         pickle.dump(model,open(filename,'wb'))
