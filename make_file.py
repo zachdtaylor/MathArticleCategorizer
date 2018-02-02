@@ -4,7 +4,7 @@
 # saves the resulting score for each document, and the document's class 
 # to a file.
 #==============================================================================
-
+print('importing libraries...')
 #Imports-----------------------------------------------------------------------
 import DV
 # import pickle
@@ -61,10 +61,13 @@ def createFile(good_scores, bad_scores, filename = 'algorithm_file.csv', return_
     # combine and create pandas df
     all_values = bad_scores + good_scores
     all_classes = bad_class + good_class
-    combined_data = pd.DataFrame({
-    'Value': all_values,
-    'Class': all_classes
-    })
+    
+    combined_data = pd.DataFrame(all_values)
+    combined_data['Class'] = all_classes
+    # combined_data = pd.DataFrame({
+    # 'Value': all_values,
+    # 'Class': all_classes
+    # })
     
     #save data to file that can be fed into the algorithm
     combined_data.to_csv(filename,index = False)
@@ -83,14 +86,16 @@ def runScript(good_file,bad_file):
     print("\nStarting 'make_file.py'... ")
        
     #clean up article data
-    good_file = good_file.to_frame()#since good articles are series instead of dataframe...
+    # good_file = good_file.to_frame()#since good articles are series instead of dataframe...
+    good_articles = pd.read_pickle("GoodArticlesClean.pkl")
+    good_file=good_articles['Text'].to_frame()
     print('1/4: Cleaning Data')
     good_clean = cleanArticles(good_file)
     bad_clean  = cleanArticles(bad_file)
     
     #run google model
     print('2/4: Initializing google model')
-    google_model = gensim.models.KeyedVectors.load_word2vec_format('GoogleNews.bin', binary=True)
+    google_model = gensim.models.KeyedVectors.load_word2vec_format('GoogleNews-vectors-negative300.bin', binary=True)
        
     #get score values
     print("3/4: Getting Scores")
