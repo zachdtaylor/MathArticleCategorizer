@@ -67,16 +67,21 @@ def runModel(data_file,model,save_model = 0):
 if __name__ == "__main__":
     # Pick model by uncommenting the appropriate line #
 
-    ## Naive Bayes
-    #model = MultinomialNB()
-
-    ## Support Vector Machines
-    model = SVC()
-
     print("Begin Script")
     #sys.argv[0] is the name of the script
     data_file = sys.argv[1]
     save      = sys.argv[2]
+    model_name = str(sys.argv[3])
+    
+    #Define Model with sys arg 'NB' or 'SVM
+    if(model_name == 'SVM'):
+         model = SVC()
+    elif(model_name == 'NB'):
+        model = MultinomialNB()
+    else:
+        print('Error: Need to specify model (SVM or NB)
+    ## Support Vector Machines
+   
 
     runModel(data_file,model,save)
 
